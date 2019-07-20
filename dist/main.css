@@ -1,0 +1,58 @@
+
+body, html {
+    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+
+    text-rendering: optimizeLegibility;
+    margin: 0;
+    padding: 0;
+}
+
+
+html {
+    font-family: "Montserrat", Helvetica Neue, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 120%;
+}
+
+*, :after, :before {
+    box-sizing: border-box
+}
+
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+#root, body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+}
+
+#root > * {
+    -webkit-transform: translateZ(0px);
+}
+
+
+.page {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    flex: 1 0 auto;
+    padding: 76px 20px 20px 20px;
+    height: 100%;
+}
+
+
+/*# sourceMappingURL=main.css.map*/
