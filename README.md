@@ -2,6 +2,8 @@
 
 Web Component Essentials with built-in adoptable styleSheets (including fallback), static template caching, and more...
 
+@TODO: write better docs
+
 
 ## Usage
 ```js
