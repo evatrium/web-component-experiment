@@ -1,6 +1,6 @@
 {
 	"name": "@iosio/elemental",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "web component essential ingredients",
 	"main": "lib/index.js",
 	"publishConfig": {
