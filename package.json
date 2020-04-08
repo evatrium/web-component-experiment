@@ -1,48 +1,32 @@
 {
-  "name": "@iosio/wc-boilerplate",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "webpack-dev-server --mode development --open",
-    "build": "webpack --mode production"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {},
-  "devDependencies": {
-    "@babel/cli": "^7.5.0",
-    "@babel/core": "^7.5.4",
-    "@babel/plugin-proposal-class-properties": "^7.5.0",
-    "@babel/plugin-proposal-decorators": "^7.4.4",
-    "@babel/plugin-proposal-object-rest-spread": "^7.5.4",
-    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
-    "@babel/plugin-transform-destructuring": "^7.5.0",
-    "@babel/plugin-transform-react-jsx": "^7.3.0",
-    "@babel/preset-env": "^7.5.4",
-    "autoprefixer": "^9.6.1",
-    "babel-loader": "^8.0.6",
-    "babel-plugin-postcss-template-literals": "^1.0.0-alpha.1",
-    "css-loader": "^3.0.0",
-    "html-loader": "^0.5.5",
-    "html-webpack-plugin": "^3.2.0",
-    "mini-css-extract-plugin": "^0.7.0",
-    "source-map-loader": "^0.2.4",
-    "uglify-template-string-loader": "^1.1.1",
-    "webpack": "^4.35.3",
-    "webpack-cli": "^3.3.5",
-    "webpack-dev-server": "^3.7.2"
-  },
-  "browserslist": {
-    "production": [
-      ">0.03%",
-      "not dead",
-      "IE 9",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version"
-    ]
-  }
+	"name": "@iosio/elemental",
+	"version": "0.7.12",
+	"description": "web component essential ingredients",
+	"main": "lib/index.js",
+	"publishConfig": {
+		"access": "public"
+	},
+	"license": "MIT",
+	"scripts": {
+		"start": "rollup -c -w --environment project:demo",
+		"build": "rollup -c --environment preset:lib",
+		"test": "exit 0"
+	},
+	"files": [
+		"src",
+		"lib"
+	],
+	"rollupConfig": {
+		"project": {
+			"demo": {
+				"preset": "dev",
+				"input": "demo/src/index.js",
+				"html": "demo/src/index.html",
+				"output": "demo/build"
+			}
+		}
+	},
+	"devDependencies": {
+		"rollup-configured": "^0.0.13"
+	}
 }

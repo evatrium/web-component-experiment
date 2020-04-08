@@ -1,244 +1,214 @@
----------- webpack sizing --------
-1.3kb main.js - webpack runtime only
-3.4kb main.js - webpack runtime with superfine / elemental
-     2KB       superfine / web Component
-   
-   4.5kb - todo app
------------------------------------
+# Elemental 🧠
 
-browser list
------------------------------------
-  "browserslist": {
-    "production": [
-      ">0.03%",
-      "not dead",
-      "IE 9",
-      "not op_mini all"
-    ],
-    "development": [
-      "defaults"
-    ]
-  }
-  
------------------------------------
+Web Component Essentials with built-in adoptable styleSheets (including fallback), static template caching, and more...
 
 
-libs
+## Usage
+```js
+import {Elemental} from "the/path/to/elemental";
 
-https://open-wc.org/
-
-content loading animation
-https://www.clever-cloud.com/doc/clever-components/?path=/story/env-var-env-var-editor-expert-default--no-data-yet-skeleton
-
-
-https://github.com/CleverCloud/clever-components/blob/master/components/atoms/cc-expand.js
-
-
-https://www.sitepoint.com/javascript-decorators-what-they-are/
-
-https://github.com/jballant/webpack-strip-block/blob/master/index.js
-
-
-https://github.com/askbeka/wc-context/blob/master/demo/redux/components/controlled-input.js
-
-https://github.com/ycmjason-talks/2018-11-21-manc-web-meetup-4/blob/master/src/vdom/diff.js
-
-
-https://github.com/tvcutsem/harmony-reflect
-
-raw loader
-https://github.com/webpack-contrib/raw-loader/blob/master/src/index.js
-
-ripples
-https://codepen.io/Craigtut/pen/dIfzv
-
-<head>
-  <!-- 
-    If you are loading es5 code you will need 
-    custom-elements-es5-loader to make the element work in 
-    es6-capable browsers. 
+export class MyComponent extends Elemental{
+    //set to true to apply shadowdom
+    static shadow = true;
+    /* 
+     Component will check for adopted stylesheets 
+     and if not available will append a style tag to the root/shadowRoot.
         
-    If you are not loading es5 code, you don't need 
-    custom-elements-es5-loader. 
-  --> 
-  <!-- 
-  <script src="./path-to/custom-elements-es5-loader.js"></script>
-  -->
+     optionally set static styles as a string
+     static styles = ':host{background:aliceblue}';
+    */
+    //or an object with options
+    static styles = {
+        // styles to adopt to each instance of this component 
+        // (efficiently achieved with adoptedStyleSheets),
+        css: ':host{color:red}',
+        // async: true, // constructable style sheet option. async true uses replace else replaceSync 
+ 
+        // you can force the usage of the style tag over adoptedStyleSheets
+        // useStyleTag: true,
+ 
+        // optionally include global styles that will be set once to the document head
+        global: 'x-element{visibility:hidden}',
+        
+        //if using shadowRoot, some resets are included by default
+        //:host, *, *::before, *::after {box-sizing: border-box;}
+        //set this to true to disable using the resets
+        //noDefaultResets: true,
+    };
 
-  <!-- Load polyfills -->
-  <script 
-    src="path-to/webcomponents-loader.js"
-    defer>
-  </script> 
+    /*  
+        If your component is simple and doesn't update much, it might be more performant 
+        to use a template instead of JSX, since a copy is cached and cloned per instance.
+        this is is a static value but dom may be updated manually in beforeInitialUpdate and after didMount.
+        or with propLogic
+    */
+    static template = '<h1 id="my_ref">hello elemental</h1><input id="checkbox" type="checkbox"/>';
+    
+    /*
+        proxyRefs
 
-  <!-- Load component when polyfills are definitely ready -->
-  <script type="module">
-    // Take care of cases in which the browser runs this
-    // script before it has finished running 
-    // webcomponents-loader.js (e.g. Firefox script execution order)
-    window.WebComponents = window.WebComponents || { 
-      waitFor(cb){ addEventListener('WebComponentsReady', cb) }
+        (this makes sense if using a template and not vdom bacuse you can just pass a function to the ref prop)
+
+        to automatically proxy elements references, 
+        set this to true or an options object to override defaults.
+        * keep your ref names camel or snake cased
+        
+        when the component mounts, reference to the h1 tag above will be available on:
+        this.refs.my_ref.
+        
+        (in a case where you are completely wiping out the dom or updating nodes, you can call:
+            this.refs.refreshRefsCache()
+        to pull new references)
+    */
+    static proxyRefs = {
+        //(default) likely there will be shadowDom so the default selector is set to get by id
+        selector: ref => `#${ref}`, // can change to something like (ref) => `[data-${ref}]`
+        selectorMethod: 'querySelector', // can change to something like querySelectorAll
+    };   
+    
+    /*
+        propTypes
+        define all your properties with types, optionally with a default value 
+        and optional reflect property to reflect your props as attrs.
+
+        (if reflected:true) 
+        When a prop is set, it will update the corresponding attribute to kabob-case version 
+        
+        in addition, properties on the class will be updated when attributes are set 
+        (this is by default without setting the reflect option)
+        
+    */
+   
+    static propTypes = {
+
+        myStringProp: String,
+        myBooleanProp: Boolean,
+        myNumberProp: Number,
+        myObjectProp: Object,
+        myArrayProp: Array,
+        anyValueGoesProp: 'any',
+
+        toBeReflected: {
+            type: String,
+            reflect: true
+        },
+
+        toBeReflectedWithDefaultValue: {
+            type: Boolean,
+            reflect: true,
+            value: true
+        },
+        checked: {
+            type: Boolean,
+            reflect: true,
+        }
+    };
+
+    /*
+        state should always be an object
+        use this.setState({someProp: 'newValue'}) 
+        or this.setState(({someNum})=>({someNum: someNum + 1})
+        
+       setState will call the method onStateChange(){
+            then this.update then didUpdate()
+       }  
+       if you override onStateChange, then you will need to manually call this.update
+    */
+    state = {
+        count: 0
+    };   
+    
+    // before didMount gets called 
+    // (if using a template) this gets called after the template is applied, but before didMount and propLogic
+    beforeInitialUpdate(){
+    }
+    
+    //example handle click without jsx
+    handleClick = (e) => {
+        e.stopPropagation();
+        let c = this.refs.checkbox.checked;
+        this.checked = c;
+        this.emit('change', {checked: c});
+    };
+
+    didMount() {
+        // this.eventListener will automatically remove the event listener when the component unmounts
+        this.eventListener(this.refs.checkbox, 'click', this.handleClick);
+        // all subscriptions (like the event listener above) are pushed into this.unsubs.
+        /*
+            //here is an example of doing the above manually
+
+            this.checkbox = this.shadowRoot.querySelector("#checkbox");
+            this.checkbox.addEventListener("click", this.handleClick);
+            this.unlisten = () => this.checkbox.removeEventListener("click", this.handleClick);
+            // then either push it into unsubs 
+            this.unsubs.push(this.unlisten)
+            // or call unlisten inside willUnmount() 
+        */ 
+    }
+    
+    willUnmount(){
+        // this.unlisten();
     }
 
-    WebComponents.waitFor(async () => { 
-      import('./path-to/some-element.js');
+    onStateChange(state, changedPaths = ['nested.value']){ //array of values that have changed on the object
+
+        //if including this method, it will override calling update (thus wont call render, propLogic and didUpdate)
+        // so manually calling this.update() here may be necessary (must do so if using the render function with vdom)
+        // otherwise, omit this method and render will be called onChange
+    }
+
+    // called when props or state changes (unless onStateChange is overriden like above)
+    didUpdate(props = {}, prevProps = {}, changedProps = ['myStringProp', 'example']){
+    }   
+
+    //****** using propLogic makes sense if using a template and you don't have a lot of changes happening.
+    // Make precise updates based on which prop changes
+    propLogic = (init)=>({ // initially runs after didMount (init===true) then is triggered for every update (init===false) 
+        myStringProp: (value, refs) => {
+            if(init){ //upon didMount
+                refs.my_ref.textContent = value || 'default name'; //value is the value from the prop
+            }else{ 
+                // subsequent updates 
+            }
+        },
+        // this both initializes and updates the checkbox when the prop changes
+        checked: (checked, {checkbox}) => checkbox.checked = checked
     });
-  </script>
-</head>
-<body>
-  <!-- Add the element to the page -->
-  <some-element></some-element>
-</body>
-
-
-
--------------- CSS ----------------
-https://developers.google.com/web/updates/2016/06/css-containment
-
-
-<body class="darktheme">
-  <fancy-tabs>
-    ...
-  </fancy-tabs>
-</body>
-
-
-:host-context(.darktheme) {
-  color: white;
-  background: black;
+    
+    // if you'd like to use jsx / preact / lit-html
+    // you can hook into the render cycle here. 
+    // this.render is called passing the following arguments
+    //     (this.props, this.state, this.setState, this)
+    // results from render are passed here, including the shadowRoot (if available) or the host element
+    // as the second argument
+    renderer = (resultsFromRender, shadowRootOrHost /* this.shadowRoot || this */)=>{
+        // renderer provides an extra layer of control if you'd like to create
+        // an abstracted layer on top of elemental,
+        // thus, having the results from render here provides a prehook before
+        // anything actually gets rendered
+    
+        //example with preact render
+        render(resultsFromRender, shadowRootOrHost)
+    };   
+    
+    render(props, state, setState, self /* self = this */){
+        
+        return (
+            <Fragment>
+                <h1 ref={r => this.my_ref = r} style={{color: 'red', fontSize: 50 /*no need for pixel vaue*/}}>
+                    hello: {props.myStringProp} 
+                </h1>
+                 <h2 style={{color: 'blue'}} className={'some className'}>
+                        {state.count}
+                 </h2>
+                <button onClick={()=> state.count++}> inc count +</button>
+            </Fragment>
+        )   
+    }   
 }
 
+customElements.define('my-component', MyComponent);
+```
 
 
-const slot = this.shadowRoot.querySelector('#slot');
-slot.addEventListener('slotchange', e => {
-  console.log('light dom children changed!');
-});
-
-Call slot.assignedNodes() to find which elements the slot is rendering. 
-The {flatten: true} option will also return a slot's fallback content (if no nodes are being distributed).
-
-element.assignedSlot tells you which of the component slots your element is assigned to.
-
-
-https://stackoverflow.com/questions/37818401/importing-html-files-with-es6-template-string-loader
-
-
-
-
-https://developers.google.com/web/fundamentals/web-components/best-practices
-
-
-
-
-const allCustomElements = [];
-
-function isCustomElement(el) {
-  const isAttr = el.getAttribute('is');
-  // Check for <super-button> and <button is="super-button">.
-  return el.localName.includes('-') || isAttr && isAttr.includes('-');
-}
-
-function findAllCustomElements(nodes) {
-  for (let i = 0, el; el = nodes[i]; ++i) {
-    if (isCustomElement(el)) {
-      allCustomElements.push(el);
-    }
-    // If the element has shadow DOM, dig deeper.
-    if (el.shadowRoot) {
-      findAllCustomElements(el.shadowRoot.querySelectorAll('*'));
-    }
-  }
-}
-
-findAllCustomElements(document.querySelectorAll('*'));
-
-
-function deepActiveElement() {
-  let a = document.activeElement;
-  while (a && a.shadowRoot && a.shadowRoot.activeElement) {
-    a = a.shadowRoot.activeElement;
-  }
-  return a;
-}
-
-
-
-https://medium.com/@sweetpalma/gooact-react-in-160-lines-of-javascript-44e0742ad60f
-
-https://medium.com/intrinsic/javascript-object-property-descriptors-proxies-and-preventing-extension-1e1907aa9d10
-
-
-https://github.com/wavesoft/dot-dom
-
-https://medium.com/@asolove/preact-internals-3-some-fiddly-little-bits-f353b1ad7abc
-
-
-
-
-https://2ality.com/2014/12/es6-proxies.html
-
-function tracePropAccess(obj, propKeys) {
-    // Store the property data here
-    let propData = Object.create(null);
-    // Replace each property with a getter and a setter
-    propKeys.forEach(function (propKey) {
-        propData[propKey] = obj[propKey];
-        Object.defineProperty(obj, propKey, {
-            get: function () {
-                console.log('GET '+propKey);
-                return propData[propKey];
-            },
-            set: function (value) {
-                console.log('SET '+propKey+'='+value);
-                propData[propKey] = value;
-            },
-        });
-    });
-    return obj;
-}
-
-
-
-https://mithril.js.org/jsx.html
-
-
-
----------------------------- polyfills
-
-npm install --save child-replace-with-polyfill
-
-
-// From https://developer.mozilla.org/en-US/docs/Web/API/ChildNode/replaceWith
-function ReplaceWithPolyfill() {
-  "use-strict"; // For safari, and IE > 10
-  var parent = this.parentNode,
-    i = arguments.length,
-    currentNode;
-  if (!parent) return;
-  if (!i)
-    // if there are no arguments
-    parent.removeChild(this);
-  while (i--) {
-    // i-- decrements i and returns the value of i before the decrement
-    currentNode = arguments[i];
-    if (typeof currentNode !== "object") {
-      currentNode = this.ownerDocument.createTextNode(currentNode);
-    } else if (currentNode.parentNode) {
-      currentNode.parentNode.removeChild(currentNode);
-    }
-    // the value of "i" below is after the decrement
-    if (!i)
-      // if currentNode is the first argument (currentNode === arguments[0])
-      parent.replaceChild(currentNode, this);
-    // if currentNode isn't the first
-    else parent.insertBefore(this.previousSibling, currentNode);
-  }
-}
-
-if (!Element.prototype.replaceWith)
-  Element.prototype.replaceWith = ReplaceWithPolyfill;
-if (!CharacterData.prototype.replaceWith)
-  CharacterData.prototype.replaceWith = ReplaceWithPolyfill;
-if (!DocumentType.prototype.replaceWith)
-  DocumentType.prototype.replaceWith = ReplaceWithPolyfill;
